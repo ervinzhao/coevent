@@ -13,10 +13,13 @@ private:
     char m_addr[16];
     int m_port;
     onConnectProc m_onConnect;
+    int m_fd;
+    int m_listening;
+    int m_lastErrorCode;
 public:
     TcpService(EventLoop &evloop);
     ~TcpService();
-    int listen(onConnectProc proc, int port, const char *addr = "0.0.0.0");
+    int listen(onConnectProc proc, int port, const char *addr = NULL);
     const char *lastError();
     void onRead();
 };
