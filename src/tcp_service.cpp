@@ -106,3 +106,19 @@ int TcpService::listen(onConnectProc proc, int port, const char *addr)
     m_onConnect = proc;
     return 0;
 }
+
+void TcpService::onRead()
+{
+    int fd = -1;
+    while(true) {
+        fd = ::accept(m_fd, NULL, NULL);
+        if(fd == -1) {
+            if(errno == EINTR)
+                continue;
+            else
+                break;
+        }
+        break;
+    }
+    m_onConnect(fd);
+}
