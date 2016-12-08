@@ -1,10 +1,10 @@
 #ifndef TCPSERVICE_H
 #define TCPSERVICE_H
 
-#include "event.h"
-#include "event_loop.h"
+#include "coevent/event.h"
+#include "coevent/event_loop.h"
 
-typedef void onConnectProc(int fd);
+typedef void (*onConnectProc)(int fd);
 
 class TcpService : public EventHandler
 {

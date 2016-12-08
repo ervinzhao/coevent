@@ -12,13 +12,13 @@ static void fileProc(struct aeEventLoop *eventLoop, int fd, void *clientData, in
     }
 }
 
-static void timeoutProc(struct aeEventLoop *eventLoop, long long id, void *clientData)
+static int timeoutProc(struct aeEventLoop *eventLoop, long long id, void *clientData)
 {
     EventHandler *handler = (EventHandler *) clientData;
     handler->onTimeout();
 }
 
-static void timeEventRemovedProc(struct aeEventLoop *eventLoop, long long id, void *clientData)
+static void timeEventRemovedProc(struct aeEventLoop *eventLoop, void *clientData)
 {
     EventHandler *handler = (EventHandler *) clientData;
     handler->onTimeEventRemoved();
@@ -39,7 +39,7 @@ void EventLoop::watchFileEvent(int fd, bool read, bool write, EventHandler *hand
 
 long long EventLoop::watchTimeEvent(long long milliseconds, EventHandler *handler)
 {
-    aeCreateTimeEvent(m_aeLoop, fileProc, &timeoutProc, (void *)handler,
+    aeCreateTimeEvent(m_aeLoop, milliseconds, &timeoutProc, (void *)handler,
                       &timeEventRemovedProc);
 }
 
@@ -48,7 +48,7 @@ void EventLoop::deleteFileEvent(int fd, bool read, bool write)
     int mask = 0;
     if(read) mask &= AE_READABLE;
     if(write) mask &= AE_WRITABLE;
-    if(mast == 0) return;
+    if(mask == 0) return;
     aeDeleteFileEvent(m_aeLoop, fd, mask);
 }
 
