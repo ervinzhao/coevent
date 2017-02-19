@@ -17,7 +17,7 @@ public:
     void watchFileEvent(int fd, bool read, bool write, EventHandler *handler);
     long long watchTimeEvent(long long milliseconds, EventHandler *handler);
     void deleteFileEvent(int fd, bool read, bool write);
-    void watchTimeEvent(long long eventID);
+    void deleteTimeEvent(long long eventID);
 
     void run();
 };

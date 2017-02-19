@@ -4,3 +4,8 @@ CoTread::CoTread()
 {
 
 }
+
+int CoThread::status()
+{
+
+}

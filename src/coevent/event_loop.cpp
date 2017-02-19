@@ -1,21 +1,22 @@
 #include "event_loop.h"
 
-static void fileProc(struct aeEventLoop *eventLoop, int fd, void *clientData, int mask)
+static void fileProc(struct aeEventLoop *eventLoop, int fd, void *clientData,
+                     int mask)
 {
     EventHandler *handler = (EventHandler *) clientData;
     if((mask & AE_READABLE) && mask & AE_WRITABLE) {
-        handler->onReadWrite();
+        handler->onReadWrite(fd);
     } else if(mask & AE_READABLE) {
-        handler->onRead();
+        handler->onRead(fd);
     } else if(mask & AE_WRITABLE) {
-        handler->onWrite();
+        handler->onWrite(fd);
     }
 }
 
 static int timeoutProc(struct aeEventLoop *eventLoop, long long id, void *clientData)
 {
     EventHandler *handler = (EventHandler *) clientData;
-    handler->onTimeout();
+    handler->onTimeout(id);
 }
 
 static void timeEventRemovedProc(struct aeEventLoop *eventLoop, void *clientData)
@@ -52,7 +53,7 @@ void EventLoop::deleteFileEvent(int fd, bool read, bool write)
     aeDeleteFileEvent(m_aeLoop, fd, mask);
 }
 
-void EventLoop::watchTimeEvent(long long eventID)
+void EventLoop::deleteTimeEvent(long long eventID)
 {
     aeDeleteTimeEvent(m_aeLoop, eventID);
 }

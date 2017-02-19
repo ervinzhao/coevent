@@ -8,10 +8,14 @@
 class CothreadUcontext : public CoThread
 {
 private:
+    ucontext_t m_ctx;
+    static ucontext_t main_ctx;
 public:
     CothreadUcontext();
+    void run(CoThreadRoutine routine);
     void resume();
     void yield();
+
 };
 
 #endif // COTHREADUCONTEXT_H
