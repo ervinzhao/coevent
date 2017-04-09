@@ -17,42 +17,37 @@ void CoSchedTask::reinit(CoScheduler *sched, CoThread *thread)
     m_thread = thread;
 }
 
+void CoSchedTask::onEvent()
+{
+    if(m_sched && m_thread)
+        m_sched->wakeThread(this);
+    else
+        ; // assert(0);
+}
+
+void CoSchedTask::onRead(int fd)
+{
+    onEvent();
+}
+
+void CoSchedTask::onWrite(int fd)
+{
+    onEvent();
+}
+
+void CoSchedTask::onReadWrite(int fd)
+{
+    onEvent();
+}
+
 void CoSchedTask::onTimeout(int eventID)
 {
-    m_sched->wakeThread(this);
-}
-
-void CoSchedTask::onRead()
-{
-    done();
-}
-
-void CoSchedTask::onWrite()
-{
-    done();
-}
-
-void CoSchedTask::onReadWrite()
-{
-    done();
-}
-
-void CoSchedTask::onTimeout()
-{
-    done();
+    onEvent();
 }
 
 void CoSchedTask::onTimeEventRemoved()
 {
-    done();
-}
-
-void CoSchedTask::done()
-{
-    if(m_sched && m_thread)
-        m_sched->wakeThread(m_thread);
-    else
-        ; // assert(0);
+    onEvent();
 }
 
 bool CoSchedTask::shouldWake(CoTask *)

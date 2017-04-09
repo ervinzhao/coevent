@@ -2,7 +2,7 @@
 #define COTASK_H
 
 #include "coevent/event.h"
-#include "cothread/cotread.h"
+#include "cothread/cothread.h"
 
 class CoScheduler;
 class CoSchedTask;
@@ -10,11 +10,13 @@ class CoSchedTask;
 
 class CoTask
 {
+private:
+    CoSchedTask *m_schedTask;
 public:
     CoTask();
     virtual void exec() {}
     virtual void cancel() {}
-    virtual void done() {}
+    void done();
 };
 
 #endif // COTASK_H

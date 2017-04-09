@@ -3,15 +3,34 @@
 
 #include "cothread.h"
 
-template<class CothreadT>
-class CothreadFactory
+class CoThreadFactory
 {
 public:
-    CothreadFactory();
-    ~CothreadFactory();
-    void reserve(int count);
-    CothreadT *create();
-    void recyle(CothreadT *thread);
+    CoThreadFactory() {
+
+    }
+    ~CoThreadFactory() {
+
+    }
+    virtual void reserve(int count);
+    virtual CoThread *create() = 0;
+    virtual void recycle(CoThread *thread);
+};
+
+template<class CoThreadT>
+class CoThreadFactoryT : public CoThreadFactory
+{
+public:
+    void reserve(int count) {
+        // Do nothing
+    }
+    CoThread *create() {
+        CoThreadT *thread = new CoThreadT(this);
+        return thread;
+    }
+    void recycle(CoThread *thread) {
+        delete thread;
+    }
 };
 
 #endif // COTHREADFACTORY_H

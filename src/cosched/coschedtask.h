@@ -3,7 +3,7 @@
 
 #include <vector>
 #include "cotask.h"
-#include "cothread/cotread.h"
+#include "cothread/cothread.h"
 
 class CoScheduler;
 class CoThread;
@@ -27,6 +27,7 @@ public:
     CoSchedTask();
     ~CoSchedTask();
     void reinit(CoScheduler *, CoThread *);
+    void onEvent();
     void onRead(int fd);
     void onWrite(int fd);
     void onReadWrite(int fd);
@@ -34,7 +35,7 @@ public:
     void onTimeEventRemoved();
 
     void exec() {}
-    void done();
+    void cancel() {}
 
     bool shouldWake(CoTask *);
     friend class CoScheduler;

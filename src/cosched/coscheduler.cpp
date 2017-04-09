@@ -1,28 +1,20 @@
 #include "coscheduler.h"
 
-CoScheduler::CoScheduler()
-{
-    m_currentUnit = NULL;
-}
+
+thread_local CoScheduler *t_scheduler = NULL;
 
 CoScheduler::~CoScheduler()
 {
 
 }
 
-void CoScheduler::wakeThread(CoSchedTask *unit)
+void CoScheduler::wakeThread(CoSchedTask *task)
 {
-    CoSchedTask *u = m_sleepingSet[unit];
-    if(u != m_sleepingSet.end()) {
-        m_sleepingSet.erase(unit);
-
-        m_workingSet[unit] = u;
+    auto iter = m_sleepingSet.find(task);
+    if(iter != m_sleepingSet.end()) {
+        m_sleepingSet.erase(iter);
+        m_workingSet[task] = task;
     }
-}
-
-void CoScheduler::wakeThread(CoThread *thread)
-{
-    wakeThread((CoSchedTask *) thread);
 }
 
 void CoScheduler::run()
@@ -34,12 +26,14 @@ void CoScheduler::run()
             m_workingSet.erase(first);
 
             m_currentTask = unit;
-            m_currentTask->thread->resume();
+            m_currentTask->m_thread->resume();
             m_currentTask = NULL;
 
-            int status = m_currentTask->thread->status();
-            if(status == 0) {
-                // Release this schedule unit.
+            CoThreadStatus status = unit->m_thread->status();
+            if(status == CoThreadStatus::Waiting) {
+                unit->m_thread->recycle();
+                unit->m_thread = NULL;
+                delete unit;
             } else {
                 m_sleepingSet[unit] = unit;
             }
@@ -48,20 +42,52 @@ void CoScheduler::run()
     }
 }
 
+
+void CoScheduler::createThread(CoThreadFactory *factory,
+                               CoThreadRoutine routine, void *user_data)
+{
+    CoSchedTask *task = new CoSchedTask;
+    CoThread *thread = factory->create();
+    thread->reinit(routine, user_data);
+    task->reinit(this, thread);
+
+    m_workingSet[task] = task;
+}
+
+void CoScheduler::addThread(CoSchedTask *thread)
+{
+    m_workingSet[thread] = thread;
+}
+
+
+void CoScheduler::waitAsyncTask(CoTask *task, int timeout)
+{
+    task->exec();
+}
+
 void CoScheduler::finishTask(CoTask *task, CoSchedTask *schedTask)
 {
     bool shouldWake = schedTask->shouldWake(task);
     if (shouldWake) {
-        this->wakeThread(schedTask);
+        wakeThread(schedTask);
     }
+}
+
+void CoScheduler::waitForReadable(int fd, int timeout)
+{
+
+}
+
+void CoScheduler::waitForWritable(int fd, int timeout)
+{
+
 }
 
 void CoScheduler::sleep(int ms)
 {
     if (m_currentTask == NULL)
-        return
+        return;
     m_loop.watchTimeEvent(ms, m_currentTask);
-
 }
 
 void CoScheduler::yield()
