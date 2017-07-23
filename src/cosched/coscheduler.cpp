@@ -59,17 +59,21 @@ void CoScheduler::addThread(CoSchedTask *thread)
     m_workingSet[thread] = thread;
 }
 
+void CoScheduler::runAsyncTask(CoTask *task)
+{
+    task->run(m_currentTask);
+}
 
 void CoScheduler::waitAsyncTask(CoTask *task, int timeout)
 {
-    task->exec();
-}
+    if(!task->finished()) {
+        if(!task->running()) {
+            task->run(m_currentTask);
+        }
 
-void CoScheduler::finishTask(CoTask *task, CoSchedTask *schedTask)
-{
-    bool shouldWake = schedTask->shouldWake(task);
-    if (shouldWake) {
-        wakeThread(schedTask);
+        m_currentTask->m_waitingType = CoSchedTask::WaitingType::Task;
+        m_currentTask->m_waitingValue.task = task;
+        m_loop.watchTimeEvent(timeout, m_currentTask);
     }
 }
 
@@ -88,6 +92,7 @@ void CoScheduler::sleep(int ms)
     if (m_currentTask == NULL)
         return;
     m_loop.watchTimeEvent(ms, m_currentTask);
+    yield();
 }
 
 void CoScheduler::yield()

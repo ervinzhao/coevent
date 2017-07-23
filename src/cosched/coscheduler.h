@@ -40,10 +40,8 @@ public:
         return m_loop;
     }
 
-    void waitAsyncTask(CoTask *, int timeout = 0);
-    void finishTask(CoTask *, CoSchedTask *);
-
-    // Sync Task Interface
+    void runAsyncTask(CoTask *task);
+    void waitAsyncTask(CoTask *task, int timeout = 0);
     void waitForReadable(int fd, int timeout = 0);
     void waitForWritable(int fd, int timeout = 0);
     void sleep(int ms);

@@ -8,36 +8,21 @@
 class CoScheduler;
 class CoThread;
 
-class CoSchedTask : public CoTask, public EventHandler
+class CoSchedTask : public CoTask
 {
 private:
     CoThread *m_thread;
     CoScheduler *m_sched;
 
-    enum class WaitingType {
-        WaitingAll,
-        WaitingAny,
-        WaitingCount,
-    };
-    std::vector<CoTask *> m_waitingTasks;
-    WaitingType m_waitingType;
-    int m_waitingCount;
-    int m_waitedCount;
 public:
     CoSchedTask();
     ~CoSchedTask();
     void reinit(CoScheduler *, CoThread *);
-    void onEvent();
-    void onRead(int fd);
-    void onWrite(int fd);
-    void onReadWrite(int fd);
-    void onTimeout(int eventID);
-    void onTimeEventRemoved();
 
     void exec() {}
     void cancel() {}
+    void active(CoTask *subTask);
 
-    bool shouldWake(CoTask *);
     friend class CoScheduler;
 };
 

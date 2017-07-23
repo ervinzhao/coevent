@@ -3,10 +3,13 @@
 
 CoTask::CoTask()
 {
-    m_schedTask = t_scheduler->currentTask();
+    m_status = TaskStatus::Init;
 }
 
 void CoTask::done()
 {
-    t_scheduler->finishTask(this, m_schedTask);
+    m_status = TaskStatus::Finished;
+    if(m_parentTask) {
+        m_parentTask->active(this);
+    }
 }
