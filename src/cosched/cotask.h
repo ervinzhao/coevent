@@ -31,7 +31,9 @@ public:
 
     void done();
 
-    // default behavior, active parent task.
+    // call this function to active current task,
+    // default behavior, current task will active
+    // it's parent task.
     virtual void active(CoTask *task) {
         done();
     }

@@ -8,13 +8,23 @@ CoScheduler::~CoScheduler()
 
 }
 
-void CoScheduler::wakeThread(CoSchedTask *task)
+void CoScheduler::switchOnThread(CoSchedTask *task)
 {
     auto iter = m_sleepingSet.find(task);
     if(iter != m_sleepingSet.end()) {
         m_sleepingSet.erase(iter);
         m_workingSet[task] = task;
     }
+}
+
+void CoScheduler::switchOffThread(CoSchedTask *task)
+{
+    auto iter = m_workingSet.find(task);
+    if(iter != m_workingSet.end()) {
+        m_workingSet.erase(iter);
+        m_sleepingSet[task] = task;
+    }
+
 }
 
 void CoScheduler::run()
@@ -77,14 +87,51 @@ void CoScheduler::waitAsyncTask(CoTask *task, int timeout)
     }
 }
 
-void CoScheduler::waitForReadable(int fd, int timeout)
+bool CoScheduler::waitForReadable(int fd, int timeout)
 {
+    if(m_currentTask == NULL)
+        return false;
+    long long eventID;
+    m_currentTask->m_timeoutCount = 0;
+    m_loop.watchFileEvent(fd, true, false, &m_currentTask->m_fileTask);
+    eventID = m_loop.watchTimeEvent(timeout, &m_currentTask->m_timeTask);
+    switchOffThread(m_currentTask);
+    yield();
 
+    bool timeoutFlag;
+    if (m_currentTask->m_timeoutCount > 0)
+        timeoutFlag = true;
+    else
+        timeoutFlag = false;
+    m_loop.deleteFileEvent(fd, true, true);
+    m_loop.deleteTimeEvent(eventID);
+    m_currentTask->m_timeoutCount = 0;
+
+    return timeoutFlag;
 }
 
-void CoScheduler::waitForWritable(int fd, int timeout)
+bool CoScheduler::waitForWritable(int fd, int timeout)
 {
+    if (m_currentTask == NULL)
+        return false;
+    long long eventID;
+    m_currentTask->m_timeoutCount = 0;
+    m_loop.watchFileEvent(fd, true, true, &m_currentTask->m_fileTask);
 
+    eventID = m_loop.watchTimeEvent(timeout, &m_currentTask->m_timeTask);
+    switchOffThread(m_currentTask);
+    yield();
+
+    bool timeoutFlag;
+    if (m_currentTask->m_timeoutCount > 0)
+        timeoutFlag = true;
+    else
+        timeoutFlag = false;
+    m_loop.deleteFileEvent(fd, true, true);
+    m_loop.deleteTimeEvent(eventID);
+    m_currentTask->m_timeoutCount = 0;
+
+    return timeoutFlag;
 }
 
 void CoScheduler::sleep(int ms)

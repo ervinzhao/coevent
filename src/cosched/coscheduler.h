@@ -40,13 +40,20 @@ public:
         return m_loop;
     }
 
+    // Run task and set m_currentTask as it's parent task
     void runAsyncTask(CoTask *task);
+
+    // Run task,
+    // if it's already running, run it as sub task of m_currentTask.
+    // waiting until it's finished.
     void waitAsyncTask(CoTask *task, int timeout = 0);
-    void waitForReadable(int fd, int timeout = 0);
-    void waitForWritable(int fd, int timeout = 0);
+    bool waitForReadable(int fd, int timeout = 0);
+    bool waitForWritable(int fd, int timeout = 0);
     void sleep(int ms);
     void yield();
-    void wakeThread(CoSchedTask *);
+
+    void switchOnThread(CoSchedTask *task);
+    void switchOffThread(CoSchedTask *task);
 
     static CoScheduler *scheduler() {
         return t_scheduler;

@@ -3,6 +3,8 @@
 
 #include <vector>
 #include "cotask.h"
+#include "cofiletask.h"
+#include "cotimetask.h"
 #include "cothread/cothread.h"
 
 class CoScheduler;
@@ -13,7 +15,10 @@ class CoSchedTask : public CoTask
 private:
     CoThread *m_thread;
     CoScheduler *m_sched;
+    CoFileTask m_fileTask;
+    CoTimeTask m_timeTask;
 
+    int m_timeoutCount;
 public:
     CoSchedTask();
     ~CoSchedTask();
